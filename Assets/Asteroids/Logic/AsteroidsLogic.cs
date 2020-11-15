@@ -20,7 +20,7 @@ public class AsteroidsLogic : Part, ICrush
                 var fp = obj.GetPart<FastPhysics>();
                 fp.Velocity =
                     new Vector2(Mathf.Sin(angle * Mathf.Deg2Rad), Mathf.Cos(angle * Mathf.Deg2Rad)) * MeteorsSpeed;
-                fp.Angularvelocity = UnityEngine.Random.Range(-5f, 5f);
+                fp.Angularvelocity = UnityEngine.Random.Range(-360f, 360f);
             }
         }
         Destroy();
