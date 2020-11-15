@@ -28,7 +28,7 @@ public static class AsteroidsGenerator
                         UnityEngine.Random.Range(-AsteroidsGame.HalfScreenSize.x - 2, AsteroidsGame.HalfScreenSize.y - 2),
                         UnityEngine.Random.Range(-AsteroidsGame.HalfScreenSize.x - 2, AsteroidsGame.HalfScreenSize.y - 2)) - obj.position)
                     .normalized * AsteroidsSpeed;
-                    fp.Angularvelocity = UnityEngine.Random.Range(-5f, 5f);
+                    fp.Angularvelocity = UnityEngine.Random.Range(-360f, 360f);
                 }
             }
             else
