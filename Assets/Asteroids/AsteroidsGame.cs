@@ -65,7 +65,7 @@ public static class AsteroidsGame
     {
         GUIStyle style = new GUIStyle();
         style.font = PrefabMaster.Load<Font>("Fonts/Hyperspace Bold");
-        style.fontSize = 72;
+        style.fontSize = 32;
         style.normal.textColor = Color.white;
         Chache.style = style;
 

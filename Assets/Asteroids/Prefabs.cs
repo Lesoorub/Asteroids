@@ -76,14 +76,14 @@ public static class Prefabs
     public static LogicalObject Score()
     {
         float w = Screen.width,
-              h = 80;
+              h = 40;
         return LogicalObject.UICreate(new Rect(5, 0, w, h))
         .AddPart(new UIText(Chache.style, "Score: 0"));
     }
     public static LogicalObject GameOver()
     {
         float w = 400,
-              h = 80;
+              h = 40;
         return LogicalObject.UICreate(new Rect(Screen.width / 2 - w / 2, Screen.height / 2 - h / 2, w, h))
         .AddPart(new UIText(Chache.style, "GameOver"))
         .AddPart(new UIButton(AsteroidsGame.ApplyGameOver));
@@ -91,14 +91,14 @@ public static class Prefabs
     public static LogicalObject LaserCounter()
     {
         float w = Screen.width,
-              h = 80;
+              h = 40;
         return LogicalObject.UICreate(new Rect(5, Screen.height - h, w, h))
         .AddPart(new UIText(Chache.style, "Lasers: 0"));
     }
     public static LogicalObject CheckBoxPolyMode()
     {
-        float w = 550,
-              h = 80;
+        float w = 250,
+              h = 40;
         return LogicalObject.UICreate(new Rect(Screen.width - w, 0, w, h))
         .AddPart(new UIText(Chache.style, "PolyMode [ ]"))
         .AddPart(new UIButton(AsteroidsGame.ChangePolyMode));
