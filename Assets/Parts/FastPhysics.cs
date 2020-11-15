@@ -24,7 +24,7 @@ public class FastPhysics : Part
         {
             if (Drag != 0)
                 Velocity *= 1 - Time.deltaTime * Drag;
-            angle += Angularvelocity;
+            angle += Angularvelocity * Time.deltaTime;
         }
         position += (Velocity * Time.deltaTime) * TimeScale;
 
