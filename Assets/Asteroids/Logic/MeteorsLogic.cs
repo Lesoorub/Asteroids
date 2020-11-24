@@ -8,6 +8,6 @@ public class MeteorsLogic : Part, ICrush
     public void OnCrush(bool islaser = false)
     {
         Destroy();
-        AsteroidsGame.Score += ScoreReward;
+        AsteroidsGame.current.Score += ScoreReward;
     }
 }

@@ -31,6 +31,7 @@ public static class Prefabs
             new Vector2(0, 1)
         }))
         .AddPart(new SpriteDrawer(Chache.Resources.loaded["bullet"]))
+        .AddPart(new BulletLogic())
         .AddPart(new FastPhysics(drag: 0, radius: 0.05f));
     }
     public static LogicalObject Asteroid()
@@ -73,34 +74,34 @@ public static class Prefabs
         .AddPart<UFOLogic>()
         .AddPart(new FastPhysics(0, 0.5f));
     }
-    public static LogicalObject Score()
+    public static UIObject Score()
     {
         float w = Screen.width,
               h = 40;
-        return LogicalObject.UICreate(new Rect(5, 0, w, h))
+        return UIObject.UICreate(new Rect(5, 0, w, h))
         .AddPart(new UIText(Chache.style, "Score: 0"));
     }
-    public static LogicalObject GameOver()
+    public static UIObject GameOver()
     {
         float w = 200,
               h = 40;
-        return LogicalObject.UICreate(new Rect(Screen.width / 2 - w / 2, Screen.height / 2 - h / 2, w, h))
+        return UIObject.UICreate(new Rect(Screen.width / 2 - w / 2, Screen.height / 2 - h / 2, w, h))
         .AddPart(new UIText(Chache.style, "GameOver"))
-        .AddPart(new UIButton(AsteroidsGame.ApplyGameOver));
+        .AddPart(new UIButton(AsteroidsGame.current.ApplyGameOver));
     }
-    public static LogicalObject LaserCounter()
+    public static UIObject LaserCounter()
     {
         float w = Screen.width,
               h = 40;
-        return LogicalObject.UICreate(new Rect(5, Screen.height - h, w, h))
+        return UIObject.UICreate(new Rect(5, Screen.height - h, w, h))
         .AddPart(new UIText(Chache.style, "Lasers: 0"));
     }
-    public static LogicalObject CheckBoxPolyMode()
+    public static UIObject CheckBoxPolyMode()
     {
         float w = 250,
               h = 40;
-        return LogicalObject.UICreate(new Rect(Screen.width - w, 0, w, h))
+        return UIObject.UICreate(new Rect(Screen.width - w, 0, w, h))
         .AddPart(new UIText(Chache.style, "PolyMode [ ]"))
-        .AddPart(new UIButton(AsteroidsGame.ChangePolyMode));
+        .AddPart(new UIButton(AsteroidsGame.current.ChangePolyMode));
     }
 }

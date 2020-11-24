@@ -7,6 +7,14 @@ using UnityEngine;
 public class LogicalObject : IDisposable
 {
     public bool isActive = true;
+    //links
+    private FastPhysics fastPhysics;
+    public FastPhysics FastPhysics { get { if (fastPhysics == null) fastPhysics = GetPart<FastPhysics>(); return fastPhysics; } set => fastPhysics = value; }
+    private PolyRenderer polyRenderer;
+    public PolyRenderer PolyRenderer { get { if (polyRenderer == null) polyRenderer = GetPart<PolyRenderer>(); return polyRenderer; } set => polyRenderer = value; }
+    private SpriteDrawer spriteDrawer;
+    public SpriteDrawer SpriteDrawer { get { if (spriteDrawer == null) spriteDrawer = GetPart<SpriteDrawer>(); return spriteDrawer; } set => spriteDrawer = value; }
+
     //included 2d transform component
     public Vector2 position = Vector2.zero;
     public Quaternion rotation { get => Quaternion.Euler(0, 0, angle); }
@@ -24,13 +32,13 @@ public class LogicalObject : IDisposable
     public void AddScript(string name, Action act) => acts.Add(name, act);
     public void RemoveScript(string name) => acts.Remove(name);
     //Part System
-    private List<KeyValuePair<Type, object>> parts = new List<KeyValuePair<Type, object>>();
+    private List<Part> parts = new List<Part>();
     public T GetPart<T>()
     {
         Type typeT = typeof(T);
         foreach (var p in parts)
-            if (p.Key == typeT)
-                return (T)p.Value;
+            if (p.GetType() == typeT)
+                return (T)(object)p;
         return default(T);
     }
     public List<T> GetParts<T>()
@@ -39,21 +47,19 @@ public class LogicalObject : IDisposable
         Type typeT = typeof(T);
         if (typeT.IsInterface)
         {
-            //typeof(MyType).GetInterfaces().Any(i => i.IsGenericType &
-            //& i.GetGenericTypeDefinition() == typeof(IMyInterface<>))
             foreach (var p in parts)
             {
-                var ints = p.Key.GetInterfaces();
+                var ints = p.GetType().GetInterfaces();
                 foreach (var i in ints)
                     if (i == typeT)
-                        results.Add((T)p.Value);
+                        results.Add((T)(object)p);
             }
         }
         else
         {
             foreach (var p in parts)
-                if (p.Key == typeT)
-                    results.Add((T)p.Value);
+                if (p.GetType() == typeT)
+                    results.Add((T)(object)p);
         }
         return results;
     }
@@ -64,7 +70,7 @@ public class LogicalObject : IDisposable
         {
             object instance = Activator.CreateInstance(t);
             (instance as Part).logicobj = this;
-            parts.Add(new KeyValuePair<Type, object>(t, instance));
+            parts.Add((Part)instance);
             return this;
         }
         else throw new NotSupportedException("Wrong Type");
@@ -76,7 +82,7 @@ public class LogicalObject : IDisposable
         {
             object instance = Activator.CreateInstance(t, parms);
             (instance as Part).logicobj = this;
-            parts.Add(new KeyValuePair<Type, object>(t, instance));
+            parts.Add((Part)instance);
             return this;
         }
         else throw new NotSupportedException("Wrong Type");
@@ -87,7 +93,7 @@ public class LogicalObject : IDisposable
         if (t.IsSubclassOf(Part.Type))
         {
             (instance as Part).logicobj = this;
-            parts.Add(new KeyValuePair<Type, object>(t, instance));
+            parts.Add((Part)instance);
             return this;
         }
         else throw new NotSupportedException("Wrong Type");
@@ -96,55 +102,28 @@ public class LogicalObject : IDisposable
     public void Start()
     {
         foreach (var item in parts)
-        {
-            Part p = item.Value as Part;
-            p.Start();
-        }
+            item.Start();
     }
-    public void KeyInput()
+    public void KeyInput(KeyCode key)
     {
         foreach (var item in parts)
-        {
-            Part p = item.Value as Part;
-            if (p.PartActive)
-                p.KeyInput();
-        }
+            if (item.PartActive)
+                item.KeyInput(key);
     }
     public void Update()
     {
         foreach (var item in parts)
-        {
-            Part p = item.Value as Part;
-            if (p.PartActive)
+            if (item.PartActive)
             {
-                p.OnDrawGizmos();
-                p.Update();
+                item.OnDrawGizmos();
+                item.Update();
             }
-        }
         foreach (var a in acts) a.Value();
-    }
-    public void OnGUI()
-    {
-        foreach (var item in parts)
-        {
-            Part p = item.Value as Part;
-            if (p.PartActive)
-                p.OnGUI();
-        }
-    }
-    public void BtnClick(KeyCode key)
-    {
-        foreach (var item in parts)
-        {
-            Part p = item.Value as Part;
-            if (p.PartActive)
-                p.BtnUpdate(key);
-        }
     }
     public void Dispose()
     {
         foreach (var p in parts)
-            (p.Value as Part).Dispose();
+            p.Dispose();
         tags.Clear();
         acts.Clear();
     }
@@ -162,7 +141,7 @@ public class LogicalObject : IDisposable
         obj.position = position;
         obj.angle = angle;
         obj.scale = scale;
-        Engine.addq.Enqueue(obj);
+        Engine.isnew.Enqueue(obj);
         return obj;
     }
     public static LogicalObject Create(Vector2 position, float angle, Vector2 scale, List<string> tags)
@@ -172,31 +151,20 @@ public class LogicalObject : IDisposable
         obj.position = position;
         obj.angle = angle;
         obj.scale = scale;
-        Engine.addq.Enqueue(obj);
+        Engine.isnew.Enqueue(obj);
         return obj;
     }
     public static LogicalObject Create(List<string> tags)
     {
         LogicalObject obj = new LogicalObject();
         obj.tags = tags;
-        Engine.addq.Enqueue(obj);
-        return obj;
-    }
-
-    public static LogicalObject UICreate(string tag = "Untagged") => UICreate(new Rect(0,0,0,0), tag);
-    public static LogicalObject UICreate(Rect rect, string tag = "Untagged")
-    {
-        LogicalObject obj = new LogicalObject();
-        obj.tag = tag;
-        obj.position = rect.position;
-        obj.scale = rect.size;
-        Engine.UI_Objects.Add(obj);
+        Engine.isnew.Enqueue(obj);
         return obj;
     }
 
     public static void Destroy(LogicalObject obj)
     {
-        Engine.delq.Enqueue(obj);
+        Engine.Objects.Remove(obj);
     }
     public static void Destroy(LogicalObject obj, float lifetime)
     {
@@ -205,7 +173,7 @@ public class LogicalObject : IDisposable
     public static IEnumerator DestroyTimer(LogicalObject obj, float lifetime)
     {
         yield return new WaitForSeconds(lifetime);
-        Engine.delq.Enqueue(obj);
+        Engine.Objects.Remove(obj);
         yield return null;
     }
 }

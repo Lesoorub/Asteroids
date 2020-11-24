@@ -22,13 +22,12 @@ public static class AsteroidsGenerator
                 else
                 {
                     var obj = CreateAsteroid(GetRandomPosition());
-                    var fp = obj.GetPart<FastPhysics>();
-                    fp.Velocity =
+                    obj.FastPhysics.Velocity =
                     (new Vector2(
-                        UnityEngine.Random.Range(-AsteroidsGame.HalfScreenSize.x - 2, AsteroidsGame.HalfScreenSize.y - 2),
-                        UnityEngine.Random.Range(-AsteroidsGame.HalfScreenSize.x - 2, AsteroidsGame.HalfScreenSize.y - 2)) - obj.position)
+                        UnityEngine.Random.Range(-AsteroidsGame.current.HalfScreenSize.x - 2, AsteroidsGame.current.HalfScreenSize.y - 2),
+                        UnityEngine.Random.Range(-AsteroidsGame.current.HalfScreenSize.x - 2, AsteroidsGame.current.HalfScreenSize.y - 2)) - obj.position)
                     .normalized * AsteroidsSpeed;
-                    fp.Angularvelocity = UnityEngine.Random.Range(-360f, 360f);
+                    obj.FastPhysics.Angularvelocity = UnityEngine.Random.Range(-360f, 360f);
                 }
             }
             else
@@ -66,9 +65,9 @@ public static class AsteroidsGenerator
     {
         var obj = Prefabs.Asteroid();
         obj.position = pos;
-        RandomShape(obj.GetPart<PolyRenderer>());
-        obj.GetPart<SpriteDrawer>().PartActive = !Settings.PolyMode;
-        obj.GetPart<PolyRenderer>().PartActive = Settings.PolyMode;
+        RandomShape(obj.PolyRenderer);
+        obj.SpriteDrawer.PartActive = !Settings.PolyMode;
+        obj.PolyRenderer.PartActive = Settings.PolyMode;
         Objects.Add(obj);
         return obj;
     }
@@ -76,17 +75,17 @@ public static class AsteroidsGenerator
     {
         var obj = Prefabs.Meteor();
         obj.position = pos;
-        RandomShape(obj.GetPart<PolyRenderer>());
-        obj.GetPart<SpriteDrawer>().PartActive = !Settings.PolyMode;
-        obj.GetPart<PolyRenderer>().PartActive = Settings.PolyMode;
+        RandomShape(obj.PolyRenderer);
+        obj.SpriteDrawer.PartActive = !Settings.PolyMode;
+        obj.PolyRenderer.PartActive = Settings.PolyMode;
         return obj;
     }
     public static LogicalObject CreateUFO(Vector2 pos)
     {
         var obj = Prefabs.UFO();
         obj.position = pos;
-        obj.GetPart<SpriteDrawer>().PartActive = !Settings.PolyMode;
-        obj.GetPart<PolyRenderer>().PartActive = Settings.PolyMode;
+        obj.SpriteDrawer.PartActive = !Settings.PolyMode;
+        obj.PolyRenderer.PartActive = Settings.PolyMode;
         Objects.Add(obj);
         return obj;
     }
@@ -94,7 +93,7 @@ public static class AsteroidsGenerator
     public static void Crush(LogicalObject @object, bool isLaser = false)
     {
         var t = @object.GetParts<ICrush>();
-        ;
+
         foreach (var c in t)
             c.OnCrush(isLaser);
     }
@@ -112,7 +111,7 @@ public static class AsteroidsGenerator
     }
     public static Vector2 GetRandomPosition()
     {
-        float distance = AsteroidsGame.HalfScreenSize.magnitude;
+        float distance = AsteroidsGame.current.HalfScreenSize.magnitude;
         //
         float angle = UnityEngine.Random.Range(0, 360);
         return new Vector2(Mathf.Sin(angle * Mathf.Deg2Rad), Mathf.Cos(angle * Mathf.Deg2Rad)) *

@@ -6,12 +6,10 @@ public abstract class Part : System.IDisposable
     public bool PartActive = true;
 
     public LogicalObject logicobj;
-
+    
     public virtual void Start() { }
-    public virtual void KeyInput() { }
+    public virtual void KeyInput(KeyCode key) { }
     public virtual void Update() { }
-    public virtual void OnGUI() { }
-    public virtual void BtnUpdate(KeyCode key) { }
     public virtual void OnDrawGizmos() { }
     public virtual void Dispose() { }
 
@@ -35,6 +33,10 @@ public abstract class Part : System.IDisposable
     public Vector2 scale { get => logicobj.scale; set => logicobj.scale = value; }
     public float angle { get => logicobj.angle; set => logicobj.angle = value; }
     public string tag { get => logicobj.tag; }
+    public FastPhysics FastPhysics { get => logicobj.FastPhysics; set => logicobj.FastPhysics = value; }
+    public PolyRenderer PolyRenderer { get => logicobj.PolyRenderer; set => logicobj.PolyRenderer = value; }
+    public SpriteDrawer SpriteDrawer { get => logicobj.SpriteDrawer; set => logicobj.SpriteDrawer = value; }
+
     public T GetPart<T>()
     {
         if (logicobj == null) return default(T);

@@ -12,24 +12,26 @@ using UnityEditor;
 #endif
 #endregion usings
 
-public static class AsteroidsGame
+public class AsteroidsGame : IGameTemplate
 {
-    public static Vector2 HalfScreenSize = Vector2.zero;
-    private static int score = 0;
-    public static int Score { get => score; set
+    public static AsteroidsGame current { get => (AsteroidsGame)Engine.activegame; }
+
+    public Vector2 HalfScreenSize = Vector2.zero;
+    private int score = 0;
+    public int Score { get => score; set
         {
             score = value;
             UpdateScore();
         }
     }
 
-    public static LogicalObject ship;
+    public LogicalObject ship;
     //UI
-    public static LogicalObject UI_Score;
-    public static LogicalObject UI_GameOver;
-    public static LogicalObject UI_LaserCounter;
-    public static LogicalObject UI_CheckBoxPolyMode;
-    public static void Start()
+    public UIObject UI_Score;
+    public UIObject UI_GameOver;
+    public UIObject UI_LaserCounter;
+    public UIObject UI_CheckBoxPolyMode;
+    public void Start()
     {
         if (HalfScreenSize == Vector2.zero)
         {
@@ -39,17 +41,18 @@ public static class AsteroidsGame
         LoadAssets();
 
         ship = Prefabs.Ship();
-        ship.GetPart<SpriteDrawer>().PartActive = !Settings.PolyMode;
-        ship.GetPart<PolyRenderer>().PartActive = Settings.PolyMode;
+        ship.SpriteDrawer.PartActive = !Settings.PolyMode;
+        ship.PolyRenderer.PartActive = Settings.PolyMode;
         UI();
+
         AsteroidsGenerator.Start();
     }
-    public static void Update()
+    public void Update()
     {
         AsteroidsGenerator.Update();
     }
     //Assets
-    public static void LoadAssets()
+    public void LoadAssets()
     {
         Sprite[] tilemap = Resources.LoadAll<Sprite>("Sprites/Tilemap");
         Chache.Resources.loaded.Add("Asteroid0", tilemap[0]);
@@ -61,7 +64,7 @@ public static class AsteroidsGame
     }
 
     //Methods
-    public static void UI()
+    public void UI()
     {
         GUIStyle style = new GUIStyle();
         style.font = PrefabMaster.Load<Font>("Fonts/Hyperspace Bold");
@@ -76,18 +79,17 @@ public static class AsteroidsGame
         UpdateLaserCounter();
         UI_CheckBoxPolyMode = Prefabs.CheckBoxPolyMode();
     }
-    public static void ApplyGameOver()//Gameover clicked
+    public void ApplyGameOver()//Gameover clicked
     {
         Restart();
     }
-    public static void OnGameOver()
+    public void OnGameOver()
     {
         UI_GameOver.isActive = true;
         FastPhysics.TimeScale = 0;
     }
-    public static void Restart()
+    public void Restart()
     {
-        Debug.Log("Restart game");
         UI_GameOver.isActive = false;
         //stop game
         FastPhysics.TimeScale = 1;
@@ -102,29 +104,31 @@ public static class AsteroidsGame
         var sl = ship.GetPart<ShipLogic>();
         sl.LasersCharges.x = sl.LasersCharges.y;
         UpdateLaserCounter();
-        ship.GetPart<FastPhysics>().Velocity = Vector2.zero;
+        ship.FastPhysics.Velocity = Vector2.zero;
         ship.position = Vector2.zero;
         ship.angle = 0;
-        foreach (var item in sl.bullets)
-            LogicalObject.Destroy(item);
     }
-    public static void UpdateScore()
+    public void UpdateScore()
     {
         UI_Score.GetPart<UIText>().Text = "Score: " + Score;
     }
-    public static void UpdateLaserCounter()
+    public void UpdateLaserCounter()
     {
         UI_LaserCounter.GetPart<UIText>().Text = "Lasers: " + ship.GetPart<ShipLogic>().LasersCharges.x;
     }
-    public static void ChangePolyMode()
+    public void ChangePolyMode()
     {
-        Debug.Log("ChangePolyMode");
         Settings.PolyMode = !Settings.PolyMode;
         UI_CheckBoxPolyMode.GetPart<UIText>().Text = $"PolyMode [{(Settings.PolyMode ? "X" : " ")}]";
         foreach (var item in Engine.FindObjectsOfType<PolyRenderer>())
         {
-            item.logicobj.GetPart<SpriteDrawer>().PartActive = !Settings.PolyMode;
+            item.SpriteDrawer.PartActive = !Settings.PolyMode;
             item.PartActive = Settings.PolyMode;
+        }
+        foreach (var item in Engine.isnew)
+        {
+            item.SpriteDrawer.PartActive = !Settings.PolyMode;
+            item.PolyRenderer.PartActive = Settings.PolyMode;
         }
         Chache.cam.clearFlags = Settings.PolyMode ? CameraClearFlags.SolidColor : CameraClearFlags.Skybox;
     }

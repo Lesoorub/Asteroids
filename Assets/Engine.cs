@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -12,68 +13,62 @@ using UnityEditor;
 #endif
 #endregion usings
 
-public class Engine : MonoBehaviour
+public static class Engine
 {
-    public static Engine current;
-    public static Queue<LogicalObject> addq = new Queue<LogicalObject>();
-    public static Queue<LogicalObject> delq = new Queue<LogicalObject>();
-    public static List<LogicalObject> Objects = new List<LogicalObject>();
-    public static List<LogicalObject> UI_Objects = new List<LogicalObject>();
-    void Start()
+    public static Queue<LogicalObject> isnew = new Queue<LogicalObject>();
+    public static ConcurrentBag<LogicalObject> Objects = new ConcurrentBag<LogicalObject>();
+    public static ConcurrentBag<UIObject> UI_Objects = new ConcurrentBag<UIObject>();
+    public static IGameTemplate activegame;
+    public static MonoBehaviour launcher;
+    public static void Start(MonoBehaviour launcher, IGameTemplate game)
     {
-        current = this;
-        //start
-        AsteroidsGame.Start();
-        //
-        PushObjects();
+        Engine.launcher = launcher;
+        activegame = game;
+
+        activegame.Start();
+
         foreach (var o in Objects)
             o.Start();
     }
-
-    void OnEnable() =>
-        Camera.onPostRender += MyPostRenderer;
-    void OnDisable() =>
-        Camera.onPostRender -= MyPostRenderer;
-
-    private void Update()
+    public static void MyPostRenderer(Camera cam)
     {
-        foreach (var o in Objects)
-            if (o.isActive)
-                o.KeyInput();
-        if (Input.anyKeyDown)
+        for (int k = 0; k < isnew.Count; k++)
         {
-            if (Input.GetKeyDown(KeyCode.Mouse0))
-                foreach (var o in UI_Objects)
-                    if (o.isActive)
-                        o.BtnClick(KeyCode.Mouse0);
-            if (Input.GetKeyDown(KeyCode.Mouse1))
-                foreach (var o in UI_Objects)
-                    if (o.isActive)
-                        o.BtnClick(KeyCode.Mouse1);
-            if (Input.GetKeyDown(KeyCode.Mouse2))
-                foreach (var o in UI_Objects)
-                    if (o.isActive)
-                        o.BtnClick(KeyCode.Mouse2);
+            var obj = isnew.Dequeue();
+            obj.Start();
+            Objects.Add(obj);
         }
-    }
-    private void MyPostRenderer(Camera cam)
-    {
-        PushObjects();
+
         foreach (var o in Objects)
             if (o.isActive)
                 o.Update();
-        //update
-        AsteroidsGame.Update();
-        //
+
+        activegame.Update();
     }
-    private void OnGUI()
+    public static void Update()
+    {
+        foreach (KeyCode key in System.Enum.GetValues(typeof(KeyCode)))
+            if (Input.GetKey(key))
+            {
+                foreach (var o in Objects)
+                    if (o.isActive)
+                        o.KeyInput(key);
+                foreach (var o in UI_Objects)
+                    if (o.isActive)
+                        o.KeyInput(key);
+            }
+    }
+    public static void OnGUI()
     {
         foreach (var o in UI_Objects)
             if (o.isActive)
                 o.OnGUI();
     }
-
-    public new static List<T> FindObjectsOfType<T>()
+    public static void StartCoroutine(IEnumerator coruntine)
+    {
+        launcher.StartCoroutine(coruntine);
+    }
+    public static List<T> FindObjectsOfType<T>()
     {
         List<T> result = new List<T>();
         foreach (var l in Objects)
@@ -82,38 +77,6 @@ public class Engine : MonoBehaviour
             if (t != null)
                 result.Add(t);
         }
-        foreach (var l in addq)
-        {
-            var t = l.GetPart<T>();
-            if (t != null)
-                result.Add(t);
-        }
         return result;
-    }
-    public new static Coroutine StartCoroutine(IEnumerator routine)
-    {
-        return (current as MonoBehaviour).StartCoroutine(routine);
-    }
-
-    private void PushObjects()
-    {
-        for (int k = 0; k < addq.Count; k++)
-        {
-            var t = addq.Dequeue();
-            if (t != null)
-            {
-                Objects.Add(t);
-                t.Start();
-            }
-        }
-        for (int k = 0; k < delq.Count; k++)
-        {
-            var t = delq.Dequeue();
-            if (t != null)
-            {
-                Objects.Remove(t);
-                t.Dispose();
-            }
-        }
     }
 }

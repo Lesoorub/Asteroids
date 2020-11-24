@@ -1,7 +1,8 @@
-﻿using System.Collections;
+﻿using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static AsteroidsGame;
+using UnityEngine.Events;
 
 public class FastPhysics : Part
 {
@@ -27,6 +28,8 @@ public class FastPhysics : Part
             angle += Angularvelocity * Time.deltaTime;
         }
         position += (Velocity * Time.deltaTime) * TimeScale;
+
+        Vector2 HalfScreenSize = AsteroidsGame.current.HalfScreenSize;
 
         //Borders
         Vector2 t = position;
@@ -55,5 +58,32 @@ public class FastPhysics : Part
     public bool Equals(MonoBehaviour other)
     {
         return GetHashCode() == other.GetHashCode();
+    }
+
+    //Collisions
+    public static bool CheckCollisions(FastPhysics who, IEnumerable<string> tagsblacklist, UnityAction<FastPhysics> onCollision)
+    {
+        Vector2 pos = who.position;
+        float r = who.Radius;
+        bool faced = false;
+        foreach (var item in Engine.FindObjectsOfType<FastPhysics>())
+            if (!CrossArray(tagsblacklist, item.logicobj.tags))
+                if (Vector2.Distance(item.position, pos) < item.Radius + r)
+                {
+                    onCollision(item);
+                    faced = true;
+                }
+        return faced;
+    }
+    public static bool CrossArray<T>(IEnumerable<T> a, IEnumerable<T> b)
+    {
+        bool t = false;
+        foreach (var item in a)
+            if (b.Contains(item))
+            {
+                t = true;
+                break;
+            }
+        return t;
     }
 }

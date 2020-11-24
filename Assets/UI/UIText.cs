@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class UIText : Part
+public class UIText : UIPart
 {
     public string Text = "";
     GUIStyle style;

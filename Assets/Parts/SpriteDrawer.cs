@@ -22,8 +22,6 @@ public class SpriteDrawer : Part
             new Vector2(1, 1), new Vector2(1, 0)
         };
         mesh.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
-        //mesh.RecalculateNormals();
-        //mesh.RecalculateBounds();
         mat = new Material(Chache.spritematerial);
         mat.mainTexture = source.texture;
         mat.SetVector("_SpriteRect", new Vector4(
